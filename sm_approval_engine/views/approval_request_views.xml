@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- =========================== -->
+        <!-- APPROVAL REQUEST VIEWS      -->
+        <!-- =========================== -->
+
+        <!-- list View -->
+        <record id="view_sm_approval_request_list" model="ir.ui.view">
+            <field name="name">sm.approval.request.list</field>
+            <field name="model">sm.approval.request</field>
+            <field name="arch" type="xml">
+                <list string="Approval Requests" decoration-info="state == 'draft'" 
+                      decoration-warning="state == 'pending'"
+                      decoration-success="state == 'approved'"
+                      decoration-danger="state == 'rejected'"
+                      decoration-muted="state == 'cancelled'">
+                    <field name="display_name"/>
+                    <field name="config_id"/>
+                    <field name="requester_id" widget="many2one_avatar_user"/>
+                    <field name="current_stage_id"/>
+                    <field name="current_approvers" widget="many2many_tags_avatar"/>
+                    <field name="request_date"/>
+                    <field name="state" widget="badge" decoration-info="state == 'draft'" 
+                           decoration-warning="state == 'pending'"
+                           decoration-success="state == 'approved'"
+                           decoration-danger="state == 'rejected'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_sm_approval_request_form" model="ir.ui.view">
+            <field name="name">sm.approval.request.form</field>
+            <field name="model">sm.approval.request</field>
+            <field name="arch" type="xml">
+                <form string="Approval Request">
+                    <header>
+                        <button name="action_submit" string="Submit" type="object" 
+                                class="btn-primary" invisible="state != 'draft'"/>
+                        <button name="action_approve" string="✅ Approve" type="object" 
+                                class="btn-success" invisible="state != 'pending'"/>
+                        <button name="action_reject" string="❌ Reject" type="object" 
+                                class="btn-danger" invisible="state != 'pending'"/>
+                        <button name="action_cancel" string="Cancel" type="object" 
+                                invisible="state in ('approved', 'cancelled')"/>
+                        <button name="action_reset_to_draft" string="Reset to Draft" type="object" 
+                                invisible="state not in ('rejected', 'cancelled')"/>
+                        <button name="action_delegate" string="🔄 Delegate" type="object"
+                                class="btn-warning" invisible="state != 'pending'"
+                                groups="sm_approval_engine.group_approval_approver"/>
+                        <field name="state" widget="statusbar" 
+                               statusbar_visible="draft,pending,approved"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_source_document" type="object" 
+                                    class="oe_stat_button" icon="fa-file-text-o">
+                                <span>View Document</span>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="display_name" readonly="1"/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Request Details">
+                                <field name="config_id" readonly="state != 'draft'"/>
+                                <field name="res_model" invisible="1"/>
+                                <field name="res_id" invisible="1"/>
+                                <field name="requester_id" widget="many2one_avatar_user"/>
+                                <field name="request_date"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                            <group string="Current Stage">
+                                <field name="current_stage_id"/>
+                                <field name="current_approvers" widget="many2many_tags_avatar"/>
+                                <field name="delegated_approver_id" readonly="1"
+                                       invisible="not delegated_approver_id"/>
+                            </group>
+                        </group>
+                        
+                        <group string="Rejection" invisible="not rejection_reason">
+                            <field name="rejection_reason" readonly="1"/>
+                            <field name="completion_date" readonly="1"/>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Approval History" name="history">
+                                <field name="history_ids">
+                                    <list string="History" create="false" edit="false">
+                                        <field name="create_date" string="Date"/>
+                                        <field name="stage_id"/>
+                                        <field name="action" widget="badge"
+                                               decoration-success="action == 'approve'"
+                                               decoration-danger="action == 'reject'"
+                                               decoration-warning="action == 'delegate'"
+                                               decoration-info="action == 'submit'"/>
+                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                        <field name="comment"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Kanban View -->
+        <record id="view_sm_approval_request_kanban" model="ir.ui.view">
+            <field name="name">sm.approval.request.kanban</field>
+            <field name="model">sm.approval.request</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" class="o_kanban_mobile">
+                    <field name="display_name"/>
+                    <field name="config_id"/>
+                    <field name="requester_id"/>
+                    <field name="current_stage_id"/>
+                    <field name="state"/>
+                    <field name="current_approvers"/>
+                    <templates>
+                        <t t-name="card">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_title">
+                                    <strong><field name="display_name"/></strong>
+                                </div>
+                                <div class="o_kanban_record_subtitle">
+                                    <field name="config_id"/>
+                                </div>
+                                <div class="text-muted">
+                                    <span>Requester: </span>
+                                    <field name="requester_id" widget="many2one_avatar_user"/>
+                                </div>
+                                <div class="text-muted" t-if="record.current_stage_id.raw_value">
+                                    <span>Stage: </span>
+                                    <field name="current_stage_id"/>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="current_approvers" widget="many2many_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_sm_approval_request_search" model="ir.ui.view">
+            <field name="name">sm.approval.request.search</field>
+            <field name="model">sm.approval.request</field>
+            <field name="arch" type="xml">
+                <search string="Search Requests">
+                    <field name="display_name"/>
+                    <field name="config_id"/>
+                    <field name="requester_id"/>
+                    <field name="current_stage_id"/>
+                    <separator/>
+                    <filter name="my_requests" string="My Requests" 
+                            domain="[('requester_id', '=', uid)]"/>
+                    <filter name="my_approvals" string="My Approvals" 
+                            domain="[('current_approvers', 'in', uid)]"/>
+                    <separator/>
+                    <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                    <filter name="pending" string="Pending" domain="[('state', '=', 'pending')]"/>
+                    <filter name="approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                    <filter name="rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                    <separator/>
+                    <filter name="this_week" string="This Week" 
+                            domain="[('request_date', '>=', (context_today() - relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                        <filter name="group_workflow" string="Workflow" context="{'group_by': 'config_id'}"/>
+                        <filter name="group_requester" string="Requester" context="{'group_by': 'requester_id'}"/>
+                        <filter name="group_stage" string="Stage" context="{'group_by': 'current_stage_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action: All Requests -->
+        <record id="action_sm_approval_request" model="ir.actions.act_window">
+            <field name="name">Approval Requests</field>
+            <field name="res_model">sm.approval.request</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="search_view_id" ref="view_sm_approval_request_search"/>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No approval requests yet
+                </p>
+                <p>
+                    Approval requests will appear here when documents are submitted for approval.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action: My Pending Approvals -->
+        <record id="action_sm_my_approvals" model="ir.actions.act_window">
+            <field name="name">My Pending Approvals</field>
+            <field name="res_model">sm.approval.request</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="search_view_id" ref="view_sm_approval_request_search"/>
+            <field name="domain">[('current_approvers', 'in', uid), ('state', '=', 'pending')]</field>
+            <field name="context">{'search_default_my_approvals': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    🎉 All caught up!
+                </p>
+                <p>
+                    You have no pending approvals at this moment.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action: My Requests -->
+        <record id="action_sm_my_requests" model="ir.actions.act_window">
+            <field name="name">My Requests</field>
+            <field name="res_model">sm.approval.request</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="search_view_id" ref="view_sm_approval_request_search"/>
+            <field name="domain">[('requester_id', '=', uid)]</field>
+            <field name="context">{'search_default_my_requests': 1}</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- =========================== -->
+        <!-- SALE ORDER APPROVAL VIEWS   -->
+        <!-- =========================== -->
+
+        <!-- Inherit Sale Order Form to add approval buttons -->
+        <record id="view_sale_order_form_approval" model="ir.ui.view">
+            <field name="name">sale.order.form.approval</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <!-- Approval Buttons -->
+                    <button name="action_sm_request_approval" string="📝 Request Approval" 
+                            type="object" class="btn-secondary"
+                            invisible="sm_approval_request_id or state not in ('draft', 'sent')"
+                            groups="sm_approval_engine.group_approval_user"/>
+                    <button name="action_sm_approve" string="✅ Approve" 
+                            type="object" class="btn-success"
+                            invisible="not sm_can_approve"
+                            groups="sm_approval_engine.group_approval_approver"/>
+                    <button name="action_sm_reject" string="❌ Reject" 
+                            type="object" class="btn-danger"
+                            invisible="not sm_can_approve"
+                            groups="sm_approval_engine.group_approval_approver"/>
+                    <button name="action_sm_cancel_approval" string="Cancel Approval" 
+                            type="object"
+                            invisible="sm_approval_state not in ('draft', 'pending')"
+                            groups="sm_approval_engine.group_approval_user"/>
+                    <button name="action_sm_delegate" string="🔄 Delegate" 
+                            type="object" class="btn-warning"
+                            invisible="not sm_can_approve"
+                            groups="sm_approval_engine.group_approval_approver"/>
+                </xpath>
+                
+                <xpath expr="//sheet" position="before">
+                    <!-- Approval Status Banner -->
+                    <div class="alert alert-warning text-center" role="alert"
+                         invisible="sm_approval_state != 'pending'">
+                        <strong>⏳ Pending Approval</strong> - 
+                        Current Stage: <field name="sm_current_stage" readonly="1"/>
+                    </div>
+                    <div class="alert alert-success text-center" role="alert"
+                         invisible="sm_approval_state != 'approved'">
+                        <strong>✅ Approved</strong> - This order has been approved.
+                    </div>
+                    <div class="alert alert-danger text-center" role="alert"
+                         invisible="sm_approval_state != 'rejected'">
+                        <strong>❌ Rejected</strong> - This order was rejected.
+                    </div>
+                </xpath>
+                
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="sm_approval_request_id" invisible="not sm_approval_request_id"
+                           readonly="1" groups="sm_approval_engine.group_approval_user"/>
+                    <field name="sm_approval_state" invisible="1"/>
+                    <field name="sm_can_approve" invisible="1"/>
+                    <field name="sm_current_stage" invisible="1"/>
+                </xpath>
+                
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_sm_view_approval" type="object"
+                            class="oe_stat_button" icon="fa-check-circle"
+                            invisible="not sm_approval_request_id"
+                            groups="sm_approval_engine.group_approval_user">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Approval</span>
+                        </div>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit Sale Order Tree (Quotations) to show approval status -->
+        <record id="view_sale_order_tree_approval" model="ir.ui.view">
+            <field name="name">sale.order.tree.approval</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="before">
+                    <field name="sm_approval_state" string="Approval" widget="badge" optional="show"
+                           decoration-warning="sm_approval_state == 'pending'"
+                           decoration-success="sm_approval_state == 'approved'"
+                           decoration-danger="sm_approval_state == 'rejected'"
+                           groups="sm_approval_engine.group_approval_user"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit Sale Order Tree (Sales Orders) to show approval status -->
+        <record id="view_sale_order_tree_so_approval" model="ir.ui.view">
+            <field name="name">sale.order.tree.so.approval</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="before">
+                    <field name="sm_approval_state" string="Approval" widget="badge" optional="show"
+                           decoration-warning="sm_approval_state == 'pending'"
+                           decoration-success="sm_approval_state == 'approved'"
+                           decoration-danger="sm_approval_state == 'rejected'"
+                           groups="sm_approval_engine.group_approval_user"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

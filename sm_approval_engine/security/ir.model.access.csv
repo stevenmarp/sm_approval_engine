@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sm_approval_config_manager,sm.approval.config manager,model_sm_approval_config,group_approval_manager,1,1,1,1
+access_sm_approval_config_approver,sm.approval.config approver,model_sm_approval_config,group_approval_approver,1,0,0,0
+access_sm_approval_config_user,sm.approval.config user,model_sm_approval_config,group_approval_user,1,0,0,0
+access_sm_approval_stage_manager,sm.approval.stage manager,model_sm_approval_stage,group_approval_manager,1,1,1,1
+access_sm_approval_stage_approver,sm.approval.stage approver,model_sm_approval_stage,group_approval_approver,1,0,0,0
+access_sm_approval_stage_user,sm.approval.stage user,model_sm_approval_stage,group_approval_user,1,0,0,0
+access_sm_approval_request_manager,sm.approval.request manager,model_sm_approval_request,group_approval_manager,1,1,1,1
+access_sm_approval_request_approver,sm.approval.request approver,model_sm_approval_request,group_approval_approver,1,1,1,0
+access_sm_approval_request_user,sm.approval.request user,model_sm_approval_request,group_approval_user,1,1,1,0
+access_sm_approval_history_manager,sm.approval.history manager,model_sm_approval_history,group_approval_manager,1,1,1,1
+access_sm_approval_history_approver,sm.approval.history approver,model_sm_approval_history,group_approval_approver,1,1,1,0
+access_sm_approval_history_user,sm.approval.history user,model_sm_approval_history,group_approval_user,1,1,1,0
+access_sm_approval_reject_wizard,sm.approval.reject.wizard,model_sm_approval_reject_wizard,base.group_user,1,1,1,1
+access_sm_approval_delegate_wizard,sm.approval.delegate.wizard,model_sm_approval_delegate_wizard,base.group_user,1,1,1,1

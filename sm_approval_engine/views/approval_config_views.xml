@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- =========================== -->
+        <!-- APPROVAL CONFIG VIEWS       -->
+        <!-- =========================== -->
+
+        <!-- list View -->
+        <record id="view_sm_approval_config_list" model="ir.ui.view">
+            <field name="name">sm.approval.config.list</field>
+            <field name="model">sm.approval.config</field>
+            <field name="arch" type="xml">
+                <list string="Approval Workflows">
+                    <field name="name"/>
+                    <field name="model_id"/>
+                    <field name="approval_mode"/>
+                    <field name="stage_ids" widget="many2many_tags"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_sm_approval_config_form" model="ir.ui.view">
+            <field name="name">sm.approval.config.form</field>
+            <field name="model">sm.approval.config</field>
+            <field name="arch" type="xml">
+                <form string="Approval Workflow">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_requests" type="object" 
+                                    class="oe_stat_button" icon="fa-list">
+                                <field name="request_count" widget="statinfo" string="Requests"/>
+                            </button>
+                        </div>
+                        <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Workflow Name"/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Basic Configuration">
+                                <field name="model_id" options="{'no_create': True}"/>
+                                <field name="domain" placeholder="[]"/>
+                                <field name="approval_mode"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="active" invisible="1"/>
+                            </group>
+                            <group string="Settings">
+                                <field name="allow_self_approval"/>
+                                <field name="notify_requester_on_approve"/>
+                                <field name="notify_requester_on_reject"/>
+                                <field name="escalation_enabled"/>
+                                <field name="escalation_hours" invisible="not escalation_enabled"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Approval Stages" name="stages">
+                                <field name="stage_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="approver_type"/>
+                                        <field name="approver_user_id" invisible="approver_type != 'user'"/>
+                                        <field name="approver_group_id" invisible="approver_type != 'group'"/>
+                                        <field name="approver_field_id" invisible="approver_type != 'field'"/>
+                                        <field name="require_all_group_members" invisible="approver_type != 'group'"/>
+                                        <field name="can_reject"/>
+                                        <field name="allow_delegation"/>
+                                        <field name="escalation_user_id" optional="hide"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Callbacks" name="callbacks">
+                                <group>
+                                    <group string="On Approval Complete">
+                                        <field name="on_approve_callback" placeholder="e.g., action_confirm"/>
+                                    </group>
+                                    <group string="On Rejection">
+                                        <field name="on_reject_callback" placeholder="e.g., action_cancel"/>
+                                    </group>
+                                </group>
+                                <div class="alert alert-info" role="alert">
+                                    <strong>💡 Tip:</strong> 
+                                    Callback methods will be called on the source document when the workflow 
+                                    reaches the specified state. Make sure the method exists on the target model.
+                                </div>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_sm_approval_config_search" model="ir.ui.view">
+            <field name="name">sm.approval.config.search</field>
+            <field name="model">sm.approval.config</field>
+            <field name="arch" type="xml">
+                <search string="Search Workflows">
+                    <field name="name"/>
+                    <field name="model_id"/>
+                    <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                    <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                    <separator/>
+                    <filter name="sequential" string="Sequential" domain="[('approval_mode', '=', 'sequential')]"/>
+                    <filter name="parallel" string="Parallel" domain="[('approval_mode', '=', 'parallel')]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_model" string="Model" context="{'group_by': 'model_id'}"/>
+                        <filter name="group_mode" string="Mode" context="{'group_by': 'approval_mode'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_sm_approval_config" model="ir.actions.act_window">
+            <field name="name">Approval Workflows</field>
+            <field name="res_model">sm.approval.config</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_sm_approval_config_search"/>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first approval workflow
+                </p>
+                <p>
+                    Define multi-stage approval processes for any model in Odoo.
+                    Configure approvers, stages, and notification settings.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

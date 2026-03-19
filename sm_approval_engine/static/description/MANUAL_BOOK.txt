@@ -1,0 +1,456 @@
+================================================================================
+                         APPROVAL ENGINE - MANUAL BOOK
+                              Version 18.0.1.0.0
+                              Author: Steven Marp
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. Introduction
+2. User Groups and Access Rights
+3. Workflow Configuration
+4. Creating Approval Stages
+5. Usage in Sale Order
+6. Dashboard
+7. Integration with Other Models
+8. Advanced Features
+9. FAQ and Troubleshooting
+
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+Approval Engine is a universal module for creating multi-stage approval 
+workflows that can be used with any Odoo model such as Sale Order, 
+Purchase Order, and others.
+
+Key Features:
+- Multi-stage approval workflow
+- Support for approvers based on specific user, group, or dynamic field
+- Sequential mode (one by one) or Parallel mode (all at once)
+- Delegate approval to another user
+- Automatic escalation for overdue requests
+- Dashboard with real-time statistics
+- Automatic callback after approved or rejected
+- Complete audit trail for every action
+
+
+================================================================================
+2. USER GROUPS AND ACCESS RIGHTS
+================================================================================
+
+This module has 3 levels of user groups:
+
+A. APPROVAL USER
+   - Can submit approval requests
+   - Can view own requests
+   - Can cancel own requests
+
+B. APPROVER
+   - All Approval User rights
+   - Can approve or reject assigned requests
+   - Can delegate approval to another user (if allowed)
+
+C. APPROVAL MANAGER
+   - All Approver rights
+   - Can manage all workflows and requests
+   - Can access configuration menu
+   - Can reset requests to draft
+
+How to assign user group:
+1. Open Settings menu
+2. Select Users and Companies, then Users
+3. Select the user to configure
+4. Scroll to Approval Engine section
+5. Select the appropriate access level
+
+
+================================================================================
+3. WORKFLOW CONFIGURATION
+================================================================================
+
+A workflow is the main configuration that determines how the approval process 
+runs for a specific model.
+
+HOW TO CREATE A WORKFLOW:
+
+1. Open the Approvals menu
+2. Select Configuration, then Approval Workflows
+3. Click the Create button
+4. Fill in the following fields:
+
+   BASIC CONFIGURATION:
+   
+   - Workflow Name: Name of workflow, example "Sale Order Approval Above 10K"
+   
+   - Target Model: Select the model that will use this workflow, 
+     example "Sale Order"
+   
+   - Filter Domain: Condition when this workflow is active. Leave empty if 
+     applies to all records. Example domains:
+     * [('amount_total', '>=', 10000)] - Only for totals above 10,000
+     * [('partner_id.customer_rank', '>', 0)] - Only for customers
+     * [('state', '=', 'draft')] - Only for draft status
+   
+   - Approval Mode: Choose one:
+     * Sequential - Stages are processed one by one in order
+     * Parallel - All stages are processed simultaneously
+
+   SETTINGS:
+   
+   - Escalation Enabled: Check if you want auto-escalation for 
+     overdue requests
+   
+   - Escalation After Hours: Number of hours before a request is considered 
+     overdue and escalation occurs
+
+5. Click Save
+
+
+================================================================================
+4. CREATING APPROVAL STAGES
+================================================================================
+
+After creating a workflow, add stages to determine who must approve and 
+in what order.
+
+HOW TO ADD A STAGE:
+
+1. Open the workflow you created
+2. In the Approval Stages tab, click Add a line
+3. Fill in the following fields:
+
+   - Stage Name: Name of stage, example "Manager Review", "Director Approval"
+   
+   - Approver Type: Choose one approver type:
+   
+     * Specific User
+       Select a specific user as approver.
+       Fill the Approver User field with the designated user.
+       
+     * User Group
+       Select a group as approver, anyone in the group can approve.
+       Fill the Approver Group field with the designated group.
+       Check Require All Group Members if ALL group members must approve.
+       
+     * Dynamic Field
+       Approver is taken from a field in the document.
+       Fill the Approver Field with a Many2one field to res.users.
+       Example: user_id, salesperson_id, manager_id
+       
+     * Requester Manager
+       Approver is the direct supervisor of the request creator.
+       Taken from HR Employee data.
+
+   - Can Reject: Check if approver can reject at this stage
+   
+   - Rejection Reason Required: Check if reason is required when rejecting
+
+4. Repeat for the next stage
+5. Arrange stage order with the drag handle on the left
+6. Click Save
+
+EXAMPLE STAGE CONFIGURATION:
+
+Stage 1: Manager Review
+- Approver Type: Specific User
+- Approver User: Manager A
+- Can Reject: Yes
+
+Stage 2: Director Approval  
+- Approver Type: User Group
+- Approver Group: Directors
+- Require All Group Members: No
+- Can Reject: Yes
+
+Stage 3: Finance Check
+- Approver Type: Dynamic Field
+- Approver Field: user_id
+- Can Reject: Yes
+
+
+================================================================================
+5. USAGE IN SALE ORDER
+================================================================================
+
+After the workflow is configured, here is how to use it in Sale Order:
+
+A. SUBMITTING APPROVAL REQUEST
+
+1. Create or open a Sale Order that meets the workflow conditions
+2. Make sure the Sale Order is in Quotation or Quotation Sent status
+3. Click the Request Approval button in the header
+4. The system will create an approval request and send notification to the 
+   first stage approver
+5. The Sale Order will display a yellow banner "Pending Approval"
+
+B. PERFORMING APPROVAL
+
+1. Login as the user designated as approver
+2. Open the Sale Order waiting for approval, or
+3. Open the Approvals menu, select My Approvals, then Pending Approvals
+4. Click the Approve button to approve
+5. If there is a next stage, the request will proceed to that stage
+6. If all stages are complete, the Sale Order will display a green banner 
+   "Approved"
+
+C. PERFORMING REJECTION
+
+1. Login as the user designated as approver
+2. Open the Sale Order or request waiting for approval
+3. Click the Reject button
+4. If rejection reason is required, a popup will appear for the reason
+5. Enter the rejection reason and click Confirm
+6. The Sale Order will display a red banner "Rejected"
+
+D. CANCELLING REQUEST
+
+1. The request creator or Approval Manager can cancel
+2. Open the Sale Order or approval request
+3. Click the Cancel Approval button
+4. The request status will change to Cancelled
+
+E. RESET TO DRAFT
+
+1. Only for requests that are Rejected or Cancelled
+2. The request creator or Approval Manager can perform reset
+3. Open the approval request
+4. Click the Reset to Draft button
+5. The request can be resubmitted
+
+F. VIEWING APPROVAL HISTORY
+
+1. Open the Sale Order that has approval
+2. Click the Approval stat button in the button box
+3. In the Approval History tab, all actions taken are visible
+4. Information includes date, stage, action, user, and comment
+
+
+================================================================================
+6. DASHBOARD
+================================================================================
+
+The dashboard provides a summary and quick access to approval requests.
+
+HOW TO ACCESS:
+1. Open the Approvals menu
+2. Select Dashboard
+
+DASHBOARD CONTENTS:
+
+A. STATISTICS
+   - Pending: Total number of requests waiting for approval
+   - Approved: Total number of approved requests
+   - Rejected: Total number of rejected requests
+   - My Pending: Number of requests waiting for your approval
+
+B. RECENT REQUESTS
+   Shows the 5 most recent requests with pending status
+
+C. MY APPROVALS
+   Shows 5 requests waiting for your approval
+   Quick approve button available directly from dashboard
+
+D. QUICK ACTIONS
+   - Click on statistic cards to see the full list
+   - Click on a request item to open details
+
+
+================================================================================
+7. INTEGRATION WITH OTHER MODELS
+================================================================================
+
+Approval Engine can be integrated with other Odoo models using 
+the provided mixin.
+
+INTEGRATION STEPS:
+
+A. CREATING MODEL INHERIT
+
+Create a new Python file or edit the existing model file:
+
+    from odoo import models
+
+    class PurchaseOrder(models.Model):
+        _inherit = ["purchase.order", "sm.approval.mixin"]
+        _name = "purchase.order"
+        _approval_model = "purchase.order"
+
+        def _on_approval_complete(self, request):
+            super()._on_approval_complete(request)
+            # Add custom logic after approved
+            self.message_post(body="Purchase Order has been approved")
+
+B. ADDING BUTTONS IN VIEW
+
+Edit the XML view to add approval buttons:
+
+    <button name="action_sm_request_approval" 
+            string="Request Approval" 
+            type="object"
+            invisible="sm_approval_request_id"/>
+            
+    <button name="action_sm_approve" 
+            string="Approve" 
+            type="object"
+            invisible="not sm_can_approve"/>
+            
+    <button name="action_sm_reject" 
+            string="Reject" 
+            type="object"
+            invisible="not sm_can_approve"/>
+
+C. ADDING FIELDS IN VIEW
+
+Add fields to display approval status:
+
+    <field name="sm_approval_request_id" readonly="1"/>
+    <field name="sm_approval_state" invisible="1"/>
+    <field name="sm_can_approve" invisible="1"/>
+
+D. CREATING WORKFLOW
+
+After the model is integrated, create a new workflow by selecting 
+that model as the Target Model.
+
+
+================================================================================
+8. ADVANCED FEATURES
+================================================================================
+
+A. REQUIRE ALL GROUP MEMBERS
+
+This feature requires ALL group members to approve before 
+proceeding to the next stage.
+
+How to enable:
+1. Open the workflow and edit the stage using User Group
+2. Check the Require All Group Members field
+3. Save
+
+How it works:
+- Each group member must approve
+- The system records who has already approved
+- The stage is complete only when all members have approved
+
+B. DELEGATION
+
+This feature allows an approver to delegate their task to another user.
+
+How to enable:
+1. Open the workflow and edit the stage
+2. Check the Allow Delegation field
+3. Save
+
+How to use:
+1. Login as the approver who wants to delegate
+2. Open the approval request
+3. Click the Delegate button (if available)
+4. Select the target user for delegation
+5. Enter a comment if needed
+6. Click Confirm
+
+C. ESCALATION
+
+This feature sends notifications if requests exceed the time limit.
+
+How to enable:
+1. Open the workflow
+2. Check Enable Escalation
+3. Fill in Escalation After Hours with the number of hours
+4. For each stage, fill the Escalation Contact field with the user 
+   who will receive notification
+5. Save
+
+How it works:
+- A scheduled action will check for overdue requests
+- If the time limit is exceeded, notification is sent to the escalation contact
+- The request can still be approved after escalation
+
+D. CALLBACK METHODS
+
+This feature runs a specific method on the source document after 
+the workflow is complete.
+
+How to enable:
+1. Open the workflow
+2. Open the Callbacks tab
+3. Fill in On Approve Callback with the method name to be called 
+   after approved, example: action_confirm
+4. Fill in On Reject Callback with the method name to be called 
+   after rejected, example: action_cancel
+5. Save
+
+Notes:
+- The method must exist on the target model
+- The method will be called without parameters
+- If the method is not found, the system will log an error
+
+E. DOMAIN FILTERING
+
+Domains allow workflows to only be active for certain records.
+
+Example domains:
+- [] or empty: Applies to all records
+- [('amount_total', '>=', 10000)]: Minimum total 10,000
+- [('state', '=', 'draft')]: Only draft status
+- [('partner_id.country_id.code', '=', 'US')]: Partner from United States
+- [('amount_total', '>=', 5000), ('partner_id.customer_rank', '>', 0)]: 
+  Combination of conditions with AND
+
+How to use OR:
+- ['|', ('field1', '=', 'value1'), ('field2', '=', 'value2')]
+
+
+================================================================================
+9. FAQ AND TROUBLESHOOTING
+================================================================================
+
+Q: Request Approval button does not appear
+A: Make sure:
+   - User has Approval User group or higher
+   - Workflow has been created for that model
+   - Record meets the domain conditions in the workflow
+   - There is no active approval request for that record
+
+Q: Approve or Reject button does not appear
+A: Make sure:
+   - User has Approver group or higher
+   - User is included in the current approvers list
+   - Request is in Pending status
+
+Q: Request does not proceed to next stage after approve
+A: Possible causes:
+   - Stage uses a group with Require All Group Members enabled
+   - There are still group members who have not approved
+   - Check the chatter to see who has not approved yet
+
+Q: Callback does not run after approved
+A: Make sure:
+   - The method name in On Approve Callback is correct
+   - The method exists on the target model
+   - Check the log to see error messages
+
+Q: Workflow is not detected for a specific record
+A: Check:
+   - Domain in workflow, make sure the record meets the conditions
+   - Company in workflow, make sure it matches the record company
+   - Workflow is in Active status
+
+Q: User does not receive approval notification
+A: The system sends notifications via Activity. Make sure:
+   - User has a valid email
+   - Email settings in Odoo are correct
+   - Check the Activity menu to see notifications
+
+
+================================================================================
+                              END OF MANUAL BOOK
+================================================================================
+
+For further assistance, please contact:
+- Website: https://apps.odoo.com/apps/browse?repo_maintainer_id=512936
+- Author: Steven Marp
+
+================================================================================

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sm_approval_engine.ApprovalDashboard">
+        <div class="o_approval_dashboard container-fluid py-4">
+            <!-- Loading State -->
+            <div t-if="state.loading" class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-3x text-primary"/>
+                <p class="mt-3 text-muted">Loading dashboard...</p>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div t-else="">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h1 class="display-6">
+                            <i class="fa fa-check-circle text-primary me-2"/>
+                            Approval Dashboard
+                        </h1>
+                        <p class="text-muted">Overview of your approval workflow</p>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <!-- My Pending -->
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100 cursor-pointer" t-on-click="openMyApprovals">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-uppercase small mb-2">My Pending</h6>
+                                        <h2 class="mb-0 text-warning" t-esc="state.stats.myPending"/>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                                        <i class="fa fa-clock-o fa-2x text-warning"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Pending -->
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100 cursor-pointer" t-on-click="openPendingRequests">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-uppercase small mb-2">Total Pending</h6>
+                                        <h2 class="mb-0 text-info" t-esc="state.stats.pending"/>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                                        <i class="fa fa-hourglass-half fa-2x text-info"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Approved -->
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100 cursor-pointer" t-on-click="openApprovedRequests">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-uppercase small mb-2">Approved</h6>
+                                        <h2 class="mb-0 text-success" t-esc="state.stats.approved"/>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                                        <i class="fa fa-check fa-2x text-success"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rejected -->
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100 cursor-pointer" t-on-click="openRejectedRequests">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-uppercase small mb-2">Rejected</h6>
+                                        <h2 class="mb-0 text-danger" t-esc="state.stats.rejected"/>
+                                    </div>
+                                    <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+                                        <i class="fa fa-times fa-2x text-danger"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="row">
+                    <!-- My Pending Approvals -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-user-circle text-primary me-2"/>
+                                    My Pending Approvals
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <t t-if="state.myApprovals.length === 0">
+                                    <div class="text-center py-4">
+                                        <i class="fa fa-check-circle fa-3x text-success mb-3"/>
+                                        <p class="text-muted">🎉 All caught up! No pending approvals.</p>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="list-group list-group-flush">
+                                        <t t-foreach="state.myApprovals" t-as="request" t-key="request.id">
+                                            <div class="list-group-item px-0">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1 cursor-pointer text-primary" 
+                                                            t-on-click="() => this.openRequest(request.id)"
+                                                            t-esc="request.display_name"/>
+                                                        <small class="text-muted">
+                                                            <span t-esc="request.config_id[1]"/> • 
+                                                            Stage: <span t-esc="request.current_stage_id[1]"/>
+                                                        </small>
+                                                    </div>
+                                                    <button class="btn btn-sm btn-success" 
+                                                            t-on-click="() => this.quickApprove(request.id)">
+                                                        <i class="fa fa-check"/> Approve
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="card-footer bg-white border-0" t-if="state.myApprovals.length > 0">
+                                <button class="btn btn-link text-primary p-0" t-on-click="openMyApprovals">
+                                    View all →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-history text-primary me-2"/>
+                                    Recent Requests
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <t t-if="state.recentRequests.length === 0">
+                                    <div class="text-center py-4">
+                                        <i class="fa fa-inbox fa-3x text-muted mb-3"/>
+                                        <p class="text-muted">No recent requests.</p>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="list-group list-group-flush">
+                                        <t t-foreach="state.recentRequests" t-as="request" t-key="request.id">
+                                            <div class="list-group-item px-0 cursor-pointer" 
+                                                 t-on-click="() => this.openRequest(request.id)">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1 text-primary" t-esc="request.display_name"/>
+                                                        <small class="text-muted">
+                                                            By <span t-esc="request.requester_id[1]"/>
+                                                        </small>
+                                                    </div>
+                                                    <span class="badge bg-warning">Pending</span>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="card-footer bg-white border-0" t-if="state.recentRequests.length > 0">
+                                <button class="btn btn-link text-primary p-0" t-on-click="openAllRequests">
+                                    View all →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-4">
+                                <div class="row text-center">
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <button class="btn btn-outline-primary w-100 py-3" t-on-click="openMyApprovals">
+                                            <i class="fa fa-clock-o fa-2x mb-2 d-block"/>
+                                            My Pending Approvals
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <button class="btn btn-outline-primary w-100 py-3" t-on-click="openAllRequests">
+                                            <i class="fa fa-list fa-2x mb-2 d-block"/>
+                                            All Requests
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-outline-primary w-100 py-3" t-on-click="openWorkflows">
+                                            <i class="fa fa-cogs fa-2x mb-2 d-block"/>
+                                            Configure Workflows
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

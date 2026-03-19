@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Module Category -->
+        <record id="module_category_approval" model="ir.module.category">
+            <field name="name">Approval Engine</field>
+            <field name="description">Approval Engine - Universal Workflow Management</field>
+            <field name="sequence">50</field>
+        </record>
+
+        <!-- User Group: Basic User -->
+        <record id="group_approval_user" model="res.groups">
+            <field name="name">Approval User</field>
+            <field name="category_id" ref="module_category_approval"/>
+            <field name="comment">Basic users who can submit and view their approval requests.</field>
+        </record>
+
+        <!-- User Group: Approver -->
+        <record id="group_approval_approver" model="res.groups">
+            <field name="name">Approver</field>
+            <field name="category_id" ref="module_category_approval"/>
+            <field name="implied_ids" eval="[(4, ref('group_approval_user'))]"/>
+            <field name="comment">Users who can approve/reject requests assigned to them.</field>
+        </record>
+
+        <!-- User Group: Manager -->
+        <record id="group_approval_manager" model="res.groups">
+            <field name="name">Approval Manager</field>
+            <field name="category_id" ref="module_category_approval"/>
+            <field name="implied_ids" eval="[(4, ref('group_approval_approver'))]"/>
+            <field name="comment">Full access to manage approval workflows and all requests.</field>
+            <!-- Admin automatically gets this group -->
+            <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- =============================== -->
+        <!-- RECORD RULES (ir.rule)          -->
+        <!-- =============================== -->
+
+        <!-- Users can only see their own requests or requests where they are the approver -->
+        <record id="rule_approval_request_user" model="ir.rule">
+            <field name="name">Approval Request: User - Own or Assigned</field>
+            <field name="model_id" ref="model_sm_approval_request"/>
+            <field name="domain_force">[
+                '|',
+                ('requester_id', '=', user.id),
+                ('current_approvers', 'in', user.id),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_approval_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Managers can see all requests -->
+        <record id="rule_approval_request_manager" model="ir.rule">
+            <field name="name">Approval Request: Manager - All</field>
+            <field name="model_id" ref="model_sm_approval_request"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_approval_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Users can only see history for their own requests or requests assigned to them -->
+        <record id="rule_approval_history_user" model="ir.rule">
+            <field name="name">Approval History: User - Own or Assigned</field>
+            <field name="model_id" ref="model_sm_approval_history"/>
+            <field name="domain_force">[
+                '|',
+                ('request_id.requester_id', '=', user.id),
+                ('request_id.current_approvers', 'in', user.id),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_approval_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Managers can see all history -->
+        <record id="rule_approval_history_manager" model="ir.rule">
+            <field name="name">Approval History: Manager - All</field>
+            <field name="model_id" ref="model_sm_approval_history"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_approval_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Config rules: Only managers can modify -->
+        <record id="rule_approval_config_manager" model="ir.rule">
+            <field name="name">Approval Config: Manager - Full Access</field>
+            <field name="model_id" ref="model_sm_approval_config"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_approval_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Multi-company rule for requests -->
+        <record id="rule_approval_request_company" model="ir.rule">
+            <field name="name">Approval Request: Multi-Company</field>
+            <field name="model_id" ref="model_sm_approval_request"/>
+            <field name="domain_force">[
+                '|',
+                ('company_id', '=', False),
+                ('company_id', 'in', company_ids),
+            ]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+    </data>
+</odoo>

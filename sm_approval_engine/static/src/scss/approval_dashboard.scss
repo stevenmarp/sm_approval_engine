@@ -1,0 +1,51 @@
+/* Approval Engine Dashboard Styles */
+/* Copyright 2026 Steven Marp */
+
+.o_approval_dashboard {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+    }
+    
+    .card.cursor-pointer:hover {
+        border-color: var(--bs-primary);
+    }
+    
+    .list-group-item.cursor-pointer:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Stat Cards */
+    .card-body h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    
+    /* Status badges */
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.8em;
+    }
+    
+    /* Quick action buttons */
+    .btn-outline-primary {
+        &:hover {
+            transform: scale(1.02);
+        }
+        
+        i {
+            opacity: 0.8;
+        }
+    }
+}

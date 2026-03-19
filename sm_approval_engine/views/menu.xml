@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- =========================== -->
+        <!-- DASHBOARD ACTION            -->
+        <!-- =========================== -->
+        
+        <record id="action_sm_approval_dashboard" model="ir.actions.client">
+            <field name="name">Approval Dashboard</field>
+            <field name="tag">sm_approval_dashboard</field>
+        </record>
+        
+        <!-- =========================== -->
+        <!-- MAIN MENU                   -->
+        <!-- =========================== -->
+        
+        <!-- Root Menu -->
+        <menuitem id="menu_sm_approval_root"
+                  name="Approvals"
+                  web_icon="sm_approval_engine,static/description/icon.png"
+                  sequence="30"/>
+        
+        <!-- Dashboard -->
+        <menuitem id="menu_sm_approval_dashboard"
+                  name="Dashboard"
+                  parent="menu_sm_approval_root"
+                  action="action_sm_approval_dashboard"
+                  sequence="5"/>
+        
+        <!-- =========================== -->
+        <!-- MY APPROVALS SECTION        -->
+        <!-- =========================== -->
+        
+        <menuitem id="menu_sm_approval_my"
+                  name="My Approvals"
+                  parent="menu_sm_approval_root"
+                  sequence="10"/>
+        
+        <menuitem id="menu_sm_my_pending_approvals"
+                  name="Pending Approvals"
+                  parent="menu_sm_approval_my"
+                  action="action_sm_my_approvals"
+                  sequence="10"/>
+        
+        <menuitem id="menu_sm_my_requests"
+                  name="My Requests"
+                  parent="menu_sm_approval_my"
+                  action="action_sm_my_requests"
+                  sequence="20"/>
+        
+        <!-- =========================== -->
+        <!-- ALL REQUESTS SECTION        -->
+        <!-- =========================== -->
+        
+        <menuitem id="menu_sm_approval_requests"
+                  name="All Requests"
+                  parent="menu_sm_approval_root"
+                  action="action_sm_approval_request"
+                  groups="sm_approval_engine.group_approval_manager"
+                  sequence="20"/>
+        
+        <!-- =========================== -->
+        <!-- CONFIGURATION SECTION       -->
+        <!-- =========================== -->
+        
+        <menuitem id="menu_sm_approval_config"
+                  name="Configuration"
+                  parent="menu_sm_approval_root"
+                  groups="sm_approval_engine.group_approval_manager"
+                  sequence="90"/>
+        
+        <menuitem id="menu_sm_approval_workflows"
+                  name="Approval Workflows"
+                  parent="menu_sm_approval_config"
+                  action="action_sm_approval_config"
+                  sequence="10"/>
+    </data>
+</odoo>
